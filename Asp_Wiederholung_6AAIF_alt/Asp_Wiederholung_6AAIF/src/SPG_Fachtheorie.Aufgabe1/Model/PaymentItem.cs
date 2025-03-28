@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SPG_Fachtheorie.Aufgabe1.Model
 {
@@ -21,7 +20,6 @@ namespace SPG_Fachtheorie.Aufgabe1.Model
         public string ArticleName { get; set; }
         public int Amount { get; set; }
         public decimal Price { get; set; }
-        public DateTime? LastUpdated { get; set; } = null;
         public Payment Payment { get; set; }
     }
 }

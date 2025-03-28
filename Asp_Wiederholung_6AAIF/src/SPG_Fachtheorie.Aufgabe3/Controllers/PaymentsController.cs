@@ -5,6 +5,7 @@ using SPG_Fachtheorie.Aufgabe1.Model;
 using SPG_Fachtheorie.Aufgabe3.Dtos;
 using System.Net; // optional, wenn du HttpStatusCode nutzt
 
+
 namespace SPG_Fachtheorie.Aufgabe3.Controllers
 {
     [Route("api/[controller]")]
@@ -18,7 +19,7 @@ namespace SPG_Fachtheorie.Aufgabe3.Controllers
             _db = db;
         }
 
-        // BEREITS VORHANDEN:
+
         [HttpGet]
         public ActionResult<IEnumerable<PaymentDto>> GetPayments([FromQuery] int? number, [FromQuery] DateTime? dateFrom)
         {
@@ -65,11 +66,9 @@ namespace SPG_Fachtheorie.Aufgabe3.Controllers
             return Ok(data);
         }
 
-        // NEU: POST /api/payments
         [HttpPost]
         public async Task<IActionResult> CreatePayment([FromBody] NewPaymentCommand command)
         {
-            // 1) Datum darf nicht mehr als 1 Minute in der Zukunft liegen
             if (command.PaymentDateTime > DateTime.Now.AddMinutes(1))
             {
                 return BadRequest("Payment date time cannot be more than 1 minute in the future.");
@@ -117,8 +116,6 @@ namespace SPG_Fachtheorie.Aufgabe3.Controllers
                 // Hier könntest du loggen
                 return StatusCode(500, $"Error while saving Payment: {ex.Message}");
             }
-
-           
             return CreatedAtAction(
                 nameof(GetPayment),
                 new { id = payment.Id },
@@ -126,11 +123,10 @@ namespace SPG_Fachtheorie.Aufgabe3.Controllers
             );
         }
 
-       
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePayment(int id, [FromQuery] bool deleteItems = false)
         {
-           
             var payment = await _db.Payments
                 .Include(p => p.PaymentItems)
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -140,18 +136,15 @@ namespace SPG_Fachtheorie.Aufgabe3.Controllers
                 return NotFound();
             }
 
-            
             if (!deleteItems && payment.PaymentItems.Any())
             {
                 return BadRequest("Payment has payment items.");
             }
 
-           
             try
             {
                 if (deleteItems)
                 {
-                   
                     _db.PaymentItems.RemoveRange(payment.PaymentItems);
                 }
                 // dann Payment löschen
@@ -163,11 +156,86 @@ namespace SPG_Fachtheorie.Aufgabe3.Controllers
                 return StatusCode(500, $"Error while deleting Payment: {ex.Message}");
             }
 
-            
             return NoContent();
         }
-    }
+
+
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> UpdatePaymentConfirmed(int id, [FromBody] UpdateConfirmedCommand command)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var payment = await _db.Payments.FindAsync(id);
+            if (payment == null)
+                return NotFound("Payment not found.");
+
+            if (payment.Confirmed != null)
+                return BadRequest("Payment already confirmed.");
+
+            payment.Confirmed = command.Confirmed;
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating payment: {ex.Message}");
+            }
+
+            return NoContent();
+        }
 
 
 
-}
+
+
+    [HttpPut("paymentItems/{id}")]
+        public async Task<IActionResult> UpdatePaymentItem(int id, [FromBody] UpdatePaymentItemCommand command)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (id != command.Id)
+                return BadRequest("Invalid payment item ID.");
+
+            var paymentItem = await _db.PaymentItems.FindAsync(id);
+            if (paymentItem == null)
+                return NotFound("Payment Item not found.");
+
+            
+            if (command.LastUpdated.HasValue && paymentItem.LastUpdated.HasValue &&
+                command.LastUpdated.Value != paymentItem.LastUpdated.Value)
+            {
+                return BadRequest("Payment item has changed.");
+            }
+
+            // Überprüfe, ob das zugehörige Payment existiert.
+            var payment = await _db.Payments.FindAsync(command.PaymentId);
+            if (payment == null)
+                return BadRequest("Invalid payment ID.");
+
+            
+            paymentItem.ArticleName = command.ArticleName;
+            paymentItem.Amount = command.Amount;
+            paymentItem.Price = command.Price;
+            
+            paymentItem.LastUpdated = DateTime.Now;
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating payment item: {ex.Message}");
+            }
+
+            return NoContent();
+        }
+
+
+
+    } }
+

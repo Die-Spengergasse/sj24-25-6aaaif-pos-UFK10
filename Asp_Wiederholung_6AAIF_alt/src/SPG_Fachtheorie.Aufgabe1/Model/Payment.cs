@@ -21,7 +21,9 @@ namespace SPG_Fachtheorie.Aufgabe1.Model
         public DateTime PaymentDateTime { get; set; }
         public Employee Employee { get; set; }
         public PaymentType PaymentType { get; set; }
+
         public DateTime? Confirmed { get; set; } = null;
+
         public List<PaymentItem> PaymentItems { get; set; } = new();
     }
 }
