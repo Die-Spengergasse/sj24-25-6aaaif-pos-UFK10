@@ -36,6 +36,8 @@ namespace SPG_Fachtheorie.Aufgabe3.Dtos
         public string EmployeeLastName { get; set; } = default!;
         public int CashDeskNumber { get; set; }
         public string PaymentType { get; set; } = default!;
+        public DateTime PaymentDateTime { get; set; }
+
 
         // Liste der Items (Artikel), die zu diesem Payment gehören
         public List<PaymentItemDto> PaymentItems { get; set; }

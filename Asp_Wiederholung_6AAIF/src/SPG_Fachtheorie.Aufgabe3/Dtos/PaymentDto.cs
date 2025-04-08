@@ -6,7 +6,8 @@
             string EmployeeLastName,
             int CashDeskNumber,
             string PaymentType,
-            decimal TotalAmount
+            decimal TotalAmount,
+        DateTime PaymentDateTime
         );
 
     public record PaymentDetailDto(
@@ -15,12 +16,18 @@
             string EmployeeLastName,
             int CashDeskNumber,
             string PaymentType,
-            List<PaymentItemDto> PaymentItems
+            int EmployeeRegistrationNumber,
+            List<PaymentItemDto> PaymentItems,
+            DateTime PaymentDateTime
+          
+
 
         );
     public record PaymentItemDto(
             string ArticleName,
             int Amount,
-            decimal Price
+            decimal Price,
+            int PaymentId,
+            DateTime? LastUpdated
         );
 }
