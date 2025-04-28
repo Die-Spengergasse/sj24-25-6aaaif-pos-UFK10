@@ -21,6 +21,7 @@ namespace SPG_Fachtheorie.Aufgabe1.Services
         {
             var manager = new Manager(
                 cmd.RegistrationNumber, cmd.FirstName, cmd.LastName,
+                cmd.Birthdate, cmd.Salary,
                 cmd.Address is not null
                     ? new Address(cmd.Address.Street, cmd.Address.Zip, cmd.Address.City)
                     : null,
